@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: number-crunch-app
+spec:
+  selector:
+    matchLabels:
+      app: number-crunch
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: number-crunch
+    spec:
+      containers:
+      - name: number-crunch
+        image: number-crunch:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: number-crunch-service
+spec:
+  selector:
+    app: number-crunch
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: number-crunch-nginx
+spec:
+  selector:
+    matchLabels:
+      app: number-crunch-nginx
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: number-crunch-nginx
+    spec:
+      containers:
+      - name: number-crunch-nginx
+        image: nginx:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: number-crunch-nginx
+spec:
+  selector:
+    matchLabels:
+      app: number-crunch-nginx
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: number-crunch-nginx
+    spec:
+      containers:
+      - name: number-crunch-nginx
+        image: nginx:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: number-crunch-nginx-service
+spec:
+  selector:
+    app: number-crunch-nginx
+  ports:
+  - name: number-crunch-nginx-service-80
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        pathType: Prefix
+        backend:
+          service:
+            name: number-crunch-nginx-service
+            port:
+              number: 80
+
+        
